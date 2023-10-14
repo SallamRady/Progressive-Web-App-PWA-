@@ -43,6 +43,7 @@ function createCard() {
   var cardTitleTextElement = document.createElement('h2');
   cardTitleTextElement.className = 'mdl-card__title-text';
   cardTitleTextElement.textContent = 'Ciaro Trip';
+  cardTitleTextElement.style.color = '#fff';
   cardTitle.appendChild(cardTitleTextElement);
   var cardSupportingText = document.createElement('div');
   cardSupportingText.className = 'mdl-card__supporting-text';
