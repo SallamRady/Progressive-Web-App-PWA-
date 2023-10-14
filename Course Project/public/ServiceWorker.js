@@ -1,23 +1,10 @@
+const CACHE_STATIC_NAME = 'static-v1';
+const CACHE_DYNAMIC_NAME = 'dynamic-v1';
+
 self.addEventListener("install", (e) => {
     // store pre-cache
     e.waitUntil(
-        caches.open('static').then(cache => {
-            // cache.addAll([
-            //     '/',
-            //     '/index.html',
-            //     '/src/js/app.js',
-            //     '/src/js/feed.js',
-            //     '/src/js/fetch.js',
-            //     '/src/js/promise.js',
-            //     '/src/js/material.min.js',
-            //     '/src/css/app.css',
-            //     '/src/css/feed.css',
-            //     '/images/main-image-lg.jpg',
-            //     '/images/main-image-sm.jpg',
-            //     '/images/main-image.jpg',
-            //     'https://fonts.googleapis.com/css?family=Roboto:400,700',
-            //     'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
-            // ]);
+        caches.open(CACHE_STATIC_NAME).then(cache => {
             cache.add('/');
             cache.add('/index.html');
             cache.add('/src/js/app.js');
@@ -32,15 +19,24 @@ self.addEventListener("install", (e) => {
             cache.add('/src/images/main-image.jpg');
             cache.add('https://fonts.googleapis.com/css?family=Roboto:400,700');
             cache.add('https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css');
+            console.log("[service worker] Service worker is installed successfully and pre-cache Also :)");
         }).catch(err => {
-            console.log("Error in store pre-cache");
+            console.log("Error in store pre-cache : ", err);
         })
-    )
-    console.log("[service worker] Service worker is installed successfully and pre-cache Also :)");
+    );
 });
 
 self.addEventListener("activate", (e) => {
-    console.log("[service worker] Service worker is activated successfully :)");
+    // clear up our cache
+    e.waitUntil(
+        caches.keys().then(keylist => {
+            return Promise.all(keylist.map(key => {
+                if (key !== CACHE_DYNAMIC_NAME && key !== CACHE_STATIC_NAME)
+                    return caches.delete(key);
+            }));
+        }).catch(err => console.log("Error in clear up cache :", err))
+    );
+    console.log("[service worker] Service worker is activated successfully and cache is cleared successfully :)");
 });
 
 self.addEventListener('fetch', (e) => {
@@ -54,7 +50,15 @@ self.addEventListener('fetch', (e) => {
             } else {
                 // continue reach request from internet network.
                 console.log('[service worker] Fetching request from internet.');
-                return fetch(e.request);
+                return fetch(e.request).then(response => {
+                    // add dynamic cache
+                    return caches.open(CACHE_DYNAMIC_NAME).then(cache => {
+                        cache.put(e.request.url, response.clone());
+                        return response;
+                    })
+                }).catch(err => {
+                    console.log("Error in store data from dynamic cache :", err);
+                });
             }
         }).catch(err => {
             console.log("Error in retrive data from cache :", err);
