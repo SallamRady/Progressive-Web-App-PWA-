@@ -20,6 +20,16 @@ function openCreatePostModal() {
 
     deferredPrompt = null;
   }
+
+  // delete our service workers
+  // if ('serviceWorker' in navigator) {
+  //   navigator.serviceWorker.getRegistrations().then(registerations => {
+  //     for (let i = 0; i < registerations.length; i++) {
+  //       registerations[i].unregister();
+  //     }
+  //   })
+  // }
+
 }
 
 function closeCreatePostModal() {
@@ -29,6 +39,18 @@ function closeCreatePostModal() {
 shareImageButton.addEventListener('click', openCreatePostModal);
 
 closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
+
+
+// allow to save assets in cache.
+function handleSaveClick() {
+  console.log('clicked');
+  if ('caches' in window) {
+    caches.open('user-requested').then(cache => {
+      cache.add('https://httpbin.org/get');
+      cache.add('/src/images/eg-binner.jpg');
+    });
+  }
+}
 
 function createCard() {
   var cardWrapper = document.createElement('div');
@@ -49,15 +71,42 @@ function createCard() {
   cardSupportingText.className = 'mdl-card__supporting-text';
   cardSupportingText.textContent = 'In Egypt';
   cardSupportingText.style.textAlign = 'center';
+  // 
+  var saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save';
+  saveBtn.addEventListener('click', handleSaveClick)
+  cardSupportingText.appendChild(saveBtn);
+
   cardWrapper.appendChild(cardSupportingText);
   componentHandler.upgradeElement(cardWrapper);
   sharedMomentsArea.appendChild(cardWrapper);
 }
+function clearCards() {
+  while (sharedMomentsArea.hasChildNodes()) {
+    sharedMomentsArea.removeChild(sharedMomentsArea.lastChild);
+  }
+}
 
-fetch('https://httpbin.org/get')
+// Cache,then network strategy.
+var url = 'https://httpbin.org/get';
+var networkDataRecived = false;
+// Operation num 1 in Strategy
+if ('caches' in window) {
+  caches.match(url).then(res => {
+    return res.json();
+  }).then(data => {
+    console.log("[web-page] Cache data :", data);
+    if (!networkDataRecived)
+      createCard();
+  });
+}
+// Operation num 2 in Strategy
+fetch(url)
   .then(function (res) {
     return res.json();
   })
   .then(function (data) {
+    console.log("[web-page] network data :", data);
+    clearCards();
     createCard();
   });
