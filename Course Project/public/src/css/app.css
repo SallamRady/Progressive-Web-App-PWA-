@@ -5,3 +5,10 @@
 .drawer-option {
   padding: 16px;
 }
+
+#form101 {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
