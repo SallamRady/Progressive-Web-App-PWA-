@@ -1,5 +1,8 @@
+importScripts("/src/js/idb.js");
+importScripts("/src/js/utilitiy.js");
 const CACHE_STATIC_NAME = 'static-v2';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2';
+
 
 self.addEventListener("install", (e) => {
     // store pre-cache
@@ -9,6 +12,7 @@ self.addEventListener("install", (e) => {
             cache.add('/index.html');
             cache.add('/offline.htm');
             cache.add('/src/js/app.js');
+            cache.add('/src/js/idb.js');
             cache.add('/src/js/feed.js');
             cache.add('/src/js/fetch.js');
             cache.add('/src/js/promise.js');
@@ -22,7 +26,7 @@ self.addEventListener("install", (e) => {
             cache.add('https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css');
             console.log("[service worker] Service worker is installed successfully and pre-cache Also :)");
         }).catch(err => {
-            console.log("Error in store pre-cache : ", err);
+            console.log("[SW-error in ServiceWorker.js in install event]", err);
         })
     );
 });
@@ -35,7 +39,9 @@ self.addEventListener("activate", (e) => {
                 if (key !== CACHE_DYNAMIC_NAME && key !== CACHE_STATIC_NAME)
                     return caches.delete(key);
             }));
-        }).catch(err => console.log("Error in clear up cache :", err))
+        }).catch(err => {
+            console.log("[SW-error in ServiceWorker.js in activate event]", err);
+        })
     );
     console.log("[service worker] Service worker is activated successfully and cache is cleared successfully :)");
 });
@@ -55,7 +61,69 @@ function trimCache(cacheName, maxLen) {
     })
 }
 
-// Cache with network fallback strategy
+// this event will fire when we are online
+self.addEventListener('sync', (e) => {
+    console.log("[Service Worker] Background Syncing...");
+
+    if (e.tag === "sync-new-post") {
+        var urlCreatePost = 'http://localhost:9000/create/post';
+
+        readAll("sync-posts").then(data => {
+            for (const dt of data) {
+                var post = {
+                    id: dt.id,
+                    title: dt.title,
+                    location: dt.location,
+                    image: "/src/images/alex.jpeg"
+                };
+                fetch(urlCreatePost, {
+                    method: 'POST',
+                    body: JSON.stringify(post),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                }).then(res => {
+                    if (res.ok) {
+                        console.log("[SW] Sync function work successfully");
+                        removeOneById("sync-posts", dt.id)
+                    }
+                }).catch(err => {
+                    console.log("[SW] Sync function has Error :", err);
+                })
+            }
+        }).catch(err => {
+            console.log("[SW] Error in SYNC EVENT :", err)
+        })
+    }
+});
+
+self.addEventListener('fetch', (e) => {
+    var url = 'http://localhost:9000/posts';
+    e.respondWith(
+        fetch(url).then(response => {
+            let cloneResponse = response.clone();
+            clearStore("posts").then(() => {
+                return cloneResponse.json();
+            }).then(data => {
+                data = data?.posts;
+                for (const key in data) {
+                    writeDate('posts', data[key]);
+                    // .then(() => {
+                    //     removeOneById("posts",key);
+                    // })
+                }
+            }).catch(err => {
+                console.log("[SW-error in ServiceWorker.js in fetch event]", err);
+            });
+            return response;
+        }).catch(err => {
+            console.log("[SW] fetch function has Error :", err);
+        })
+    );
+});
+
+/** // Cache with network fallback strategy
 self.addEventListener('fetch', (e) => {
     // check if http request in cache?
     e.respondWith(
@@ -87,6 +155,7 @@ self.addEventListener('fetch', (e) => {
         })
     )
 });
+*/
 
 /** // Cache-only Strategy
 self.addEventListener("fetch", e => {
