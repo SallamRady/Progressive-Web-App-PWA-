@@ -123,6 +123,34 @@ self.addEventListener('fetch', (e) => {
     );
 });
 
+// react with user actions on notifications
+self.addEventListener('notificationclick', e => {
+    // declatation ..
+    let notification = e.notification;
+    let action = e.action;
+    console.log("Notification : ", notification);
+    if (action === 'confirm') {
+        console.log("[SW] user click OK");
+    } else {
+        console.log("[SW] user click cancel");
+    }
+});
+
+// listen for incomming notifications from back-end
+self.addEventListener("push", (e) => {
+    let data = { title: 'New!', content: "Something New happened!" };
+
+    if (e.data) {
+        data = JSON.parse(e.data.text());
+    };
+    let options = {
+        body: data.content
+    };
+    e.waitUntil(
+        self.registration.showNotification(data.title, options)
+    )
+})
+
 /** // Cache with network fallback strategy
 self.addEventListener('fetch', (e) => {
     // check if http request in cache?
