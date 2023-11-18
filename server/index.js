@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require("path");
 const cors = require('cors');
+const webPush = require("web-push");
 const posts = [
     {
         id: 0,
@@ -39,6 +40,7 @@ const posts = [
         image: "/src/images/HongKong.jpg"
     }
 ];
+const Subscriptions = [];
 
 const app = express();
 app.use(cors());
@@ -62,13 +64,32 @@ app.get('/posts', (req, res, next) => {
 
 // POST /create/post - post created successfully.
 app.post('/create/post', (req, res, next) => {
-    // console.log("Data:", req.body);
-    posts.push(req.body)
-    return res.status(200).json({
+    // declaration...
+    let newPost = req.body;
+    let privateKey = `F_bSpsJnojel-8L8SEtASpK0JHVpWTDBNa42nv94aOU`;
+    let publicKey = `BN9LQCggbHNq7a1nSAv2UCVQ5xF9oc2IBrRVL1pqpIdYdDI-pOd0kICULtcvs2ws2N4BHFuOdSHpeqidK2N56qY`;
+    let subject = 'mailto:sallamrady99@gmail.com';
+    posts.push(newPost)
+    webPush.setVapidDetails(subject, publicKey, privateKey);
+    for (let i = 0; i < Subscriptions.length; i++) {
+        const element = Subscriptions[i];
+        let msgBody = JSON.stringify({ title: "New Post", content: "New Post Added!" })
+        webPush.sendNotification(element, msgBody);
+    }
+    return res.status(201).json({
         msg: "post created successfully."
     });
 });
 
+// POST /create/subscription - subscription created successfully.
+app.post('/create/subscription', (req, res, next) => {
+    // console.log("Data:", req.body);
+    Subscriptions.push(req.body);
+    console.log("Subscription ", req.body);
+    return res.status(200).json({
+        msg: "Subscription created successfully."
+    });
+});
 
 //error middleware
 app.use((error, req, res, next) => {
