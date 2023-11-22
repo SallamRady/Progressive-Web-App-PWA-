@@ -70,19 +70,24 @@ self.addEventListener('sync', (e) => {
 
         readAll("sync-posts").then(data => {
             for (const dt of data) {
-                var post = {
-                    id: dt.id,
-                    title: dt.title,
-                    location: dt.location,
-                    image: "/src/images/alex.jpeg"
-                };
+                let postData = new FormData();
+                postData.append('id', dt.id);
+                postData.append('title', dt.title);
+                postData.append('location', dt.location);
+                postData.append('image', dt.image,"image.jpg");
+                console.log("PX SW Data ", data);
+                for (var key of postData.entries()) {
+                    console.log("PX SW postData ",key[0] + ', ' + key[1]);
+                }
+                // var post = {
+                //     id: dt.id,
+                //     title: dt.title,
+                //     location: dt.location,
+                //     image: "/src/images/alex.jpeg"
+                // };
                 fetch(urlCreatePost, {
                     method: 'POST',
-                    body: JSON.stringify(post),
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
+                    body: postData
                 }).then(res => {
                     if (res.ok) {
                         console.log("[SW] Sync function work successfully");

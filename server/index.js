@@ -1,7 +1,10 @@
 const express = require('express');
 const path = require("path");
+const fs = require("fs");
 const cors = require('cors');
+const multer = require('multer');
 const webPush = require("web-push");
+// const formidable = require("formidable");
 const posts = [
     {
         id: 0,
@@ -41,13 +44,25 @@ const posts = [
     }
 ];
 const Subscriptions = [];
-
+const storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, __dirname + '/uploads');
+    },
+    filename: function (req, file, callback) {
+        console.log('file',file)
+        const timestamp = Date.now();
+        callback(null, `${timestamp}-${file.originalname}`);
+    }
+})
 const app = express();
 app.use(cors());
 // Destination folder for uploaded images
 app.use(express.json()); // to support JSON-encoded bodies
 app.use(express.urlencoded()); // to support URL-encoded bodies
-app.use(express.static(path.join(__dirname, "images")));
+app.use(express.static(path.join(__dirname, "uploads")));
+app.use(multer({
+    storage: storage
+}).single("image"));
 
 //Helper middleware to add general setting
 app.use((req, res, next) => {
@@ -65,11 +80,28 @@ app.get('/posts', (req, res, next) => {
 // POST /create/post - post created successfully.
 app.post('/create/post', (req, res, next) => {
     // declaration...
-    let newPost = req.body;
+    let { filename } = req.file;
+    if(!filename){
+        filename = req.file?.name;
+    }
+    let destinationFilePath = path.join('D:', 'Courses', 'Udemy - Progressive Web Apps (PWA) - The Complete Guide 2020-7', 'Progressive-Web-App-PWA-', 'Course Project', 'public', 'src', 'images', filename);
+    // Move the file
+    fs.rename(req.file.path, destinationFilePath, (err) => {
+        if (err) {
+            console.error('Error moving file:', err);
+        } else {
+            console.log('File moved successfully!');
+        }
+    });
+
+    let newPost = {
+        ...req.body,
+        image: `/src/images/${filename}`
+    };
     let privateKey = `F_bSpsJnojel-8L8SEtASpK0JHVpWTDBNa42nv94aOU`;
     let publicKey = `BN9LQCggbHNq7a1nSAv2UCVQ5xF9oc2IBrRVL1pqpIdYdDI-pOd0kICULtcvs2ws2N4BHFuOdSHpeqidK2N56qY`;
     let subject = 'mailto:sallamrady99@gmail.com';
-    posts.push(newPost)
+    posts.push(newPost);
     webPush.setVapidDetails(subject, publicKey, privateKey);
     for (let i = 0; i < Subscriptions.length; i++) {
         const element = Subscriptions[i];
