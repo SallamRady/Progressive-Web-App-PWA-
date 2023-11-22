@@ -2,7 +2,7 @@
   z-index: 1001;
   position: fixed;
   width: 100%;
-  min-height: 100vh;
+  min-height: calc(100vh - 56px);
   overflow-y: scroll;
   bottom: 0;
   top: 56px;
@@ -11,6 +11,24 @@
   /*display: none;*/
   transform: translateY(100vh);
   transition: transform 0.3s;
+}
+video,canvas {
+  width: 512px;
+  max-width: 100%;
+  display: none;
+  margin: auto;
+}
+
+#pick-image {
+  display: none;
+}
+
+#capture-btn {
+  margin: 10px auto;
+}
+
+.mdl-spinner {
+  margin: auto;
 }
 
 .main-image {

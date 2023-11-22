@@ -117,6 +117,73 @@
             </div>
           </nav>
         </div>
+        <form id="form101" enctype="multipart/form-data">
+          <video id="player" autoplay></video>
+          <canvas id="canvas" width="320px" height="240px"></canvas>
+          <button
+            class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
+            id="capture-btn"
+          >
+            Capture
+          </button>
+          <div id="pick-image">
+            <h6>Pick an Image instead</h6>
+            <input type="file" name="image" accept="image/*" id="image-picker" />
+          </div>
+          <div
+            class="input-section mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+          >
+            <input class="mdl-textfield__input" type="text" id="title" />
+            <label class="mdl-textfield__label" for="title" name="title"
+              >Title</label
+            >
+          </div>
+          <div
+            class="input-section mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+            id="manual-location"
+          >
+            <input class="mdl-textfield__input" type="text" id="location" />
+            <label
+              class="mdl-textfield__label"
+              for="location"
+              name="location"
+              >Location</label
+            >
+          </div>
+          <div class="input-section">
+            <button
+              class="mdl-button mdl-js-button mdl-button mdl-button--colored"
+              type="button"
+              id="location-btn"
+            >
+              Get Location
+            </button>
+            <div
+              class="mdl-spinner mdl-js-spinner is-active"
+              id="location-loader"
+            ></div>
+          </div>
+          <br />
+          <div>
+            <button
+              class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-color--accent"
+              type="submit"
+              id="post-btn"
+            >
+              Post!
+            </button>
+          </div>
+          <br />
+          <div>
+            <button
+              class="mdl-button mdl-js-button mdl-button--fab"
+              id="close-create-post-modal-btn"
+              type="button"
+            >
+              <i class="material-icons">close</i>
+            </button>
+          </div>
+        </form>
         <main class="mdl-layout__content mat-typography">
           <img
             src="/src/images/main-image.jpg"
@@ -124,48 +191,6 @@
             class="main-image"
           />
           <div class="page-content">
-            <form id="form101">
-              <div
-                class="input-section mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
-              >
-                <input class="mdl-textfield__input" type="text" id="title" />
-                <label class="mdl-textfield__label" for="title" name="title"
-                  >Title</label
-                >
-              </div>
-              <div
-                class="input-section mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
-                id="manual-location"
-              >
-                <input class="mdl-textfield__input" type="text" id="location" />
-                <label
-                  class="mdl-textfield__label"
-                  for="location"
-                  name="location"
-                  >Location</label
-                >
-              </div>
-              <br />
-              <div>
-                <button
-                  class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-color--accent"
-                  type="submit"
-                  id="post-btn"
-                >
-                  Post!
-                </button>
-              </div>
-              <br />
-              <div>
-                <button
-                  class="mdl-button mdl-js-button mdl-button--fab"
-                  id="close-create-post-modal-btn"
-                  type="button"
-                >
-                  <i class="material-icons">close</i>
-                </button>
-              </div>
-            </form>
             <h5 class="text-center mdl-color-text--primary">
               Share your Moments
             </h5>
